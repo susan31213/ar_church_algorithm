@@ -45,6 +45,81 @@ def church2D(real, photo, f):
 
     return s1, s2
 
+def church(real, photo, f, init_z, center=[3000/2, 4000/2], plot=False):
+
+    ab = ((1.6e-6 * (photo[0][0]-photo[1][0])) ** 2 + (1.6e-6 * (photo[0][1]-photo[1][1])) ** 2) ** 0.5
+    Oa = (f**2 + ((1.6e-6 * abs(center[0]-photo[0][0]))**2 + (1.6e-6 * abs(center[1]-photo[0][1]))**2))**0.5
+    Ob = (f**2 + ((1.6e-6 * abs(center[0]-photo[1][0]))**2 + (1.6e-6 * abs(center[1]-photo[1][1]))**2))**0.5
+    aOb = math.acos((Oa**2+Ob**2-ab**2)/(2*Oa*Ob))
+
+    bc = ((1.6e-6 * (photo[1][0]-photo[2][0])) ** 2 + (1.6e-6 * (photo[1][1]-photo[2][1])) ** 2) ** 0.5
+    Oc = (f**2 + ((1.6e-6 * abs(center[0]-photo[2][0]))**2 + (1.6e-6 * abs(center[1]-photo[2][1]))**2))**0.5
+    bOc = math.acos((Ob**2+Oc**2-bc**2)/(2*Oc*Ob))
+
+    ac = ((1.6e-6 * (photo[0][0]-photo[2][0])) ** 2 + (1.6e-6 * (photo[0][1]-photo[2][1])) ** 2) ** 0.5
+    aOc = math.acos((Oa**2+Oc**2-ac**2)/(2*Oc*Oa))
+
+    AB = ((real[0][0] - real[1][0]) ** 2 + (real[0][1] - real[1][1]) ** 2) **0.5
+    BC = ((real[2][0] - real[1][0]) ** 2 + (real[2][1] - real[1][1]) ** 2) **0.5
+    AC = ((real[0][0] - real[2][0]) ** 2 + (real[0][1] - real[2][1]) ** 2) **0.5
+
+
+    x, y, z = (real_marks[1][0]+real_marks[2][0])/3, (real_marks[1][1]+real_marks[2][1])/3, init_z
+    step = 0.001
+    moves = [[x, y, z+step], [x+step, y, z+step], [x, y+step, z+step], [x+step, y+step, z+step], [x-step, y+step, z+step], [x-step, y, z+step], [x, y-step, z+step], [x+step, y-step, z+step], [x-step, y-step, z+step],
+            [x+step, y, z], [x, y+step, z], [x+step, y+step, z], [x-step, y+step, z], [x-step, y, z], [x, y-step, z], [x+step, y-step, z], [x-step, y-step, z],
+            [x, y, z-step], [x+step, y, z-step], [x, y+step, z-step], [x+step, y+step, z-step], [x-step, y+step, z-step], [x-step, y, z-step], [x, y-step, z-step], [x+step, y-step, z-step], [x-step, y-step, z-step]]
+    moves = [[x, y, z+step], [x+step, y, z], [x, y+step, z], [x, y, z-step], [x-step, y, z], [x, y-step, z]]
+    min_error = 1000
+    ans = []
+    iteration = 0
+
+    xx = []
+    yy = []
+    zz = []
+
+    oscillation = 0
+    last_error = 0
+    for t in range(10000):
+        moves = [[x, y, z+step], [x+step, y, z+step], [x, y+step, z+step], [x+step, y+step, z+step], [x-step, y+step, z+step], [x-step, y, z+step], [x, y-step, z+step], [x+step, y-step, z+step], [x-step, y-step, z+step],
+                [x, y, z], [x+step, y, z], [x, y+step, z], [x+step, y+step, z], [x-step, y+step, z], [x-step, y, z], [x, y-step, z], [x+step, y-step, z], [x-step, y-step, z],
+                [x, y, z-step], [x+step, y, z-step], [x, y+step, z-step], [x+step, y+step, z-step], [x-step, y+step, z-step], [x-step, y, z-step], [x, y-step, z-step], [x+step, y-step, z-step], [x-step, y-step, z-step]]
+        for m in moves:
+            OA = (m[0]**2 + m[1]**2 + m[2]**2) ** 0.5
+            OB = ((m[0]-real_marks[2][0])**2 + (m[1]-real_marks[2][1])**2 + m[2]**2) ** 0.5
+            OC = ((m[0]-real_marks[2][0])**2 + (m[1]-real_marks[2][1])**2 + m[2]**2) ** 0.5
+            AOB = math.acos((OA**2+OB**2-AB**2)/(2*OA*OB))
+            BOC = math.acos((OB**2+OC**2-BC**2)/(2*OC*OB))
+            AOC = math.acos((OA**2+OC**2-AC**2)/(2*OA*OC))
+            # error = abs(AOB-aOb) + abs(BOC-bOc) + abs(AOC-aOc)
+            error = abs(AOB-aOb)
+
+            if abs(min_error) > abs(error):
+                min_error = error
+                ans = m
+                iteration = t
+                if plot:
+                    xx.append(m[0])
+                    yy.append(m[1])
+                    zz.append(m[2])
+                
+        
+        # if abs(last_error + min_error) < step*0.1:
+        #     print('adjust step')
+        #     step *= 0.1
+        last_error = min_error
+        x = ans[0]
+        y = ans[1]
+    print(t, m, abs(error))
+    if plot:
+        fig = plt.figure()
+        ax = fig.gca(projection='3d')
+        ax.plot(xx, yy, zz)
+        ax.legend()
+        plt.show()
+
+    return m, abs(error)
+
 # read images
 long_img = cv2.imread('Long.png')
 mid_img = cv2.imread('Mid.png')
@@ -69,8 +144,12 @@ short_marks = [[1262, 466], [633, 3513], [2186, 2795]]
 long_s1, long_s2 = church2D(real_marks, long_marks, 4.73e-3)
 mid_s1, mid_s2 = church2D(real_marks, mid_marks, 4.73e-3)
 short_s1, short_s2 = church2D(real_marks, short_marks, 4.73e-3)
-print('Long.png:  {0} m\nMid.png:   {1} m\nShort.png: {2} m'.format(long_s1, mid_s1, short_s1))
-print('Long.png:  {0} m\nMid.png:   {1} m\nShort.png: {2} m'.format(long_s2, mid_s2, short_s2))
+print('Distance\nLong.png:  {0} m\nMid.png:   {1} m\nShort.png: {2} m'.format(long_s1, mid_s1, short_s1))
+print('Focus\nLong.png:  {0} m\nMid.png:   {1} m\nShort.png: {2} m'.format(long_s2, mid_s2, short_s2))
+
+long_cam, long_err = church(real_marks, long_marks, long_s2, long_s1)
+mid_cam, mid_err = church(real_marks, mid_marks, mid_s2, mid_s1)
+short_cam, short_err = church(real_marks, short_marks, short_s2, short_s1)
 
 
 

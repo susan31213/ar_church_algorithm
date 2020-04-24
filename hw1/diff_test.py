@@ -8,38 +8,58 @@ short_marks = [[1262, 466], [633, 3513], [2186, 2795]]
 f = 4.73e-3
 center = [3000/2, 4000/2]
 
-O = [x,y,z]
+# O = [x,y,z]
 
-vOa = [(long_marks[0][0]-center[0]) * 1.6e-6, (long_marks[0][1]-center[1]) * 1.6e-6]
-vOb = [(long_marks[1][0]-center[0]) * 1.6e-6, (long_marks[1][1]-center[1]) * 1.6e-6]
+ab = ((1.6e-6 * (long_marks[0][0]-long_marks[1][0])) ** 2 + (1.6e-6 * (long_marks[0][1]-long_marks[1][1])) ** 2) ** 0.5
 Oa = (0.004751563300220614**2 + ((1.6e-6 * abs(center[0]-long_marks[0][0]))**2 + (1.6e-6 * abs(center[1]-long_marks[0][1]))**2))**0.5
 Ob = (0.004751563300220614**2 + ((1.6e-6 * abs(center[0]-long_marks[1][0]))**2 + (1.6e-6 * abs(center[1]-long_marks[1][1]))**2))**0.5
+aOb = acos((Oa**2+Ob**2-ab**2)/(2*Oa*Ob))
+print(aOb)
 
-print(Oa, Ob)
+# print(math.degrees(math.acos((vOa[0] * vOb[0] + vOa[1] * vOb[1])/(Oa*Ob))))
 
-print(math.degrees(math.acos((vOa[0] * vOb[0] + vOa[1] * vOb[1])/(Oa*Ob))))
+# print()
 
-print()
+x, y, z = symbols('x y z')
+AB = ((real_marks[0][0] - real_marks[1][0]) ** 2 + (real_marks[0][1] - real_marks[1][1]) ** 2) **0.5
+print(AB)
+OA = (x**2 + y**2 +z**2) ** 0.5
+OB = ((x-real_marks[1][0])**2 + (y-real_marks[1][1])**2 + z**2) ** 0.5
+# print(math.acos((OA**2+OB**2-AB**2)/(2*OA*OB)))
+# diff = abs(math.acos((OA**2+OB**2-AB**2)/(2*OA*OB)) - math.acos((Oa**2+Ob**2-ab**2)/(2*Oa*Ob)))
 
-x, y = symbols('x, y')
- 
-z = x**2+y**2+x*y+2
-print(z)
-result = z.subs({x: 1, y: 2})   # 用数值分别对x、y进行替换
+# math.acos((OA**2+OB**2-AB**2)/(2*OA*OB)*math.pi
+# math.acos((((x**2 + y**2 +z**2) ** 0.5)**2+(((x-real_marks[1][0])**2 + (y-real_marks[1][1])**2 + z**2) ** 0.5)**2-(((real_marks[0][0] - real_marks[1][0]) ** 2 + (real_marks[0][1] - real_marks[1][1]) ** 2) ** 0.5)**2)/(2*((x**2 + y**2 +z**2) ** 0.5)*(((x-real_marks[1][0])**2 + (y-real_marks[1][1])**2 + z**2) ** 0.5))*math.pi
+
+X = 13.5
+Y = 2
+Z = 1.042275263067448
+# AOB = acos(((x**2 + y**2 +z**2)+((x-27.5e-2)**2 + (y-5.8e-2)**2 + z**2)-AB**2)/(2*((x**2 + y**2 +z**2) ** 0.5)*(((x-27.5e-2)**2 + (y-5.8e-2)**2 + z**2) ** 0.5)))
+angle_diff1 = acos(((x**2 + y**2 +z**2)+((x-0.275)**2 + (y-0.058)**2 + z**2)-0.2810498176480462**2)/(2*((x**2 + y**2 +z**2) ** 0.5)*(((x-0.275)**2 + (y-0.058)**2 + z**2) ** 0.5))) - 0.266775623611873
+angle_diff2 = aOb - acos(((x**2 + y**2 +z**2)+((x-0.275)**2 + (y-0.058)**2 + z**2)-0.2810498176480462**2)/(2*((x**2 + y**2 +z**2) ** 0.5)*(((x-0.275)**2 + (y-0.058)**2 + z**2) ** 0.5)))
+result = angle_diff1.subs({x: X, y: Y, z: Z})   # 用数值分别对x、y进行替换
 print(result)
- 
-dx = diff(z, x)   # 对x求偏导
-print(dx)
-result = dx.subs({x: 1, y: 2})
+result = angle_diff2.subs({x: X, y: Y, z: Z})   # 用数值分别对x、y进行替换
 print(result)
- 
-dy = diff(z, y)   # 对y求偏导
-print(dy)
-result = dy.subs({x: 1, y: 2})
-print(result)
- 
- 
-# subs函数可以将算式中的符号进行替换，它有3种调用方式：
-# expression.subs(x, y) : 将算式中的x替换成y
-# expression.subs({x:y,u:v}) : 使用字典进行多次替换
-# expression.subs([(x,y),(u,v)]) : 使用列表进行多次替换
+
+
+
+dx1 = diff(angle_diff1, x)   # 对x求偏导
+dy1 = diff(angle_diff1, y)   # 对y求偏导
+dz1 = diff(angle_diff1, z)
+dx2 = diff(angle_diff2, x)   # 对x求偏导
+dy2 = diff(angle_diff2, y)   # 对y求偏导
+dz2 = diff(angle_diff2, z)
+
+min_diff = 100
+for k in range(20):
+    if angle_diff1.subs({x: X, y: Y, z: Z}) >= 0:
+        X += dx1.subs({x: X, y: Y, z: Z})
+        Y += dy1.subs({x: X, y: Y, z: Z})
+        Z += dz1.subs({x: X, y: Y, z: Z})
+        print(X,Y,Z, angle_diff1.subs({x: X, y: Y, z: Z}))
+    else: 
+        X += dx2.subs({x: X, y: Y, z: Z})
+        Y += dy2.subs({x: X, y: Y, z: Z})
+        Z += dz2.subs({x: X, y: Y, z: Z})
+        print(X,Y,Z, angle_diff2.subs({x: X, y: Y, z: Z}))
