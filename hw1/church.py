@@ -43,7 +43,7 @@ def church2D(real, photo, f):
         else:
             last_s1 = s1
 
-    return s1
+    return s1, s2
 
 # read images
 long_img = cv2.imread('Long.png')
@@ -66,10 +66,13 @@ mid_marks = [[1075, 1398], [672, 3550], [1747, 3000]]
 short_marks = [[1262, 466], [633, 3513], [2186, 2795]]
 
 # church's algorithm with given png
-long_s = church2D(real_marks, long_marks, 4.73e-3)
-mid_s = church2D(real_marks, mid_marks, 4.73e-3)
-short_s = church2D(real_marks, short_marks, 4.73e-3)
-print('Long.png:  {0} m\nMid.png:   {1} m\nShort.png: {2} m'.format(long_s, mid_s, short_s))
+long_s1, long_s2 = church2D(real_marks, long_marks, 4.73e-3)
+mid_s1, mid_s2 = church2D(real_marks, mid_marks, 4.73e-3)
+short_s1, short_s2 = church2D(real_marks, short_marks, 4.73e-3)
+print('Long.png:  {0} m\nMid.png:   {1} m\nShort.png: {2} m'.format(long_s1, mid_s1, short_s1))
+print('Long.png:  {0} m\nMid.png:   {1} m\nShort.png: {2} m'.format(long_s2, mid_s2, short_s2))
+
+
 
 
 
